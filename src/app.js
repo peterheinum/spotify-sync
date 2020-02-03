@@ -141,7 +141,7 @@ const setCurrentlyPlaying = async user => {
   const { id, progress_ms } = track
   const body = {
     "uris": ["spotify:track:" + id],
-    "position_ms": progress_ms
+    "position_ms": progress_ms + 5000
   }
 
   const options = { url, body, json: true, ...authHeaders(user) }
