@@ -175,7 +175,7 @@ const test = async user => {
 }
 
 const broadCastSong = () => {
-  const [_, followers] = authorizedUsers
+  const [_, ...followers] = authorizedUsers
   followers.forEach(follower => setCurrentlyPlaying(follower))
 }
 
