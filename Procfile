@@ -1,1 +1,1 @@
-node src/app
+node: node src/app
