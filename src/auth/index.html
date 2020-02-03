@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <style>
+    .body {
+      background-color: green;
+    }
+
+    button {
+      display: inline-block;
+      border: none;
+      padding: 1rem 2rem;
+      margin: 0;
+      text-decoration: none;
+      background: #0069ed;
+      color: #ffffff;
+      font-family: sans-serif;
+      font-size: 1rem;
+      cursor: pointer;
+      text-align: center;
+      transition: background 250ms ease-in-out,
+        transform 150ms ease;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+    }
+
+    button:hover,
+    button:focus {
+      background: #0053ba;
+    }
+
+    button:focus {
+      outline: 1px solid #fff;
+      outline-offset: -4px;
+    }
+
+    button:active {
+      transform: scale(0.99);
+    }
+
+    body {
+      width: 100%;
+      height: 100%;
+      padding: 20px;
+    }
+
+    .container {
+      width: 50vw;
+      display: flex;
+      justify-content: center;
+    }
+  </style>
+  <title>Sync</title>
+</head>
+
+<body>
+  <button id="checkStatusBtn">Check who is here</button>
+  <button id="syncBtn">Sync</button>
+  <div class="container">
+
+  </div>
+</body>
+<script>
+  const toJson = res => res.json()
+  const login = () => {
+    fetch('/api/listUsers')
+      .then(toJson)
+      .then(response => {
+        console.log(response)
+        const container = document.querySelector('.container')
+        response.forEach(usr => {
+          const id = usr.access_token.slice(0, 5)
+          const item = document.createElement("div")
+          item.innerHTML = id
+          container.appendChild(item)
+          container.appendChild(document.createElement("hr"))
+        })
+      })
+  }
+
+  const sync = () => {
+    fetch('/api/sync')
+      .then(toJson)
+      .then(response => {
+        console.log(response)
+        const container = document.querySelector('.container')
+      })
+  }
+
+
+  const checkStatusBtn = document.querySelector('#checkStatusBtn')
+  checkStatusBtn.addEventListener('click', login)
+  const syncBtn = document.querySelector('#syncBtn')
+  syncBtn.addEventListener('click', sync)
+</script>
+
+</html>

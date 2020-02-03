@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
 
 router.get('/callback', async (req, res) => {
   const { code } = req.query
-
+  console.log(req.query)
   const options = {
     url: 'https://accounts.spotify.com/api/token',
     form: {
@@ -40,7 +40,7 @@ router.get('/callback', async (req, res) => {
   const { access_token, refresh_token } = response
 
   eventHub.emit('authRecieved', { access_token, refresh_token })
-  res.send('hello world baby')
+  res.sendFile(__dirname + '/index.html')
 })
 
 module.exports = router
