@@ -12,7 +12,8 @@ express.use(bodyParser.urlencoded({ extended: true }))
 express.use('/', require('./auth/spotifyAuth'))
 express.use('/api/', require('./services/api'))
 
-express.listen(3000, () => console.log('Webhook server is listening, port 3000'))
+const port = process.env.PORT || 3000
+express.listen(port, () => console.log(`Webhook server is listening, port ${port}`))
 
 const { eventHub } = require('./utils/helpers')
 
