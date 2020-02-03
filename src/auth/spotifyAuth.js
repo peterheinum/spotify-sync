@@ -14,7 +14,7 @@ const request = async ({ options, method }) => {
 }
 
 router.get('/', async (req, res) => {
-  const redirect_uri = encodeURIComponent('http://spync.herokuapp.com/callback')
+  const redirect_uri = encodeURIComponent(process.env.CALLBACK_URI || 'http://spync.herokuapp.com/callback')
   const scopes = 'user-read-playback-state user-modify-playback-state'
   const url = `https://accounts.spotify.com/authorize?client_id=${process.env.SPOTIFY_CLIENT_ID}&response_type=code&scope=${scopes}&redirect_uri=${redirect_uri}`
   res.redirect(url)
@@ -22,13 +22,13 @@ router.get('/', async (req, res) => {
 
 router.get('/callback', async (req, res) => {
   const { code } = req.query
-  console.log(req.query)
+  console.log('New user incoming')
   const options = {
     url: 'https://accounts.spotify.com/api/token',
     form: {
       'code': code,
       'grant_type': 'authorization_code',
-      'redirect_uri': 'http://spync.herokuapp.com/callback'
+      'redirect_uri': process.env.CALLBACK_URI || 'http://spync.herokuapp.com/callback'
     },
     headers: {
       Authorization: 'Basic ' + (Buffer.from(process.env.SPOTIFY_CLIENT_ID + ':' + process.env.SPOTIFY_CLIENT_SECRET).toString('base64'))
@@ -38,7 +38,7 @@ router.get('/callback', async (req, res) => {
 
   const response = await request({ options, method: 'post' })
   const { access_token, refresh_token } = response
-
+  res.location('/')
   eventHub.emit('authRecieved', { access_token, refresh_token })
   res.sendFile(__dirname + '/index.html')
 })
