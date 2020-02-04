@@ -15,6 +15,11 @@ express.use(bodyParser.urlencoded({ extended: true }))
 express.use('/', require('./auth/spotifyAuth'))
 express.use('/api/', require('./services/api'))
 
+express.use('/home', (req, res) => {
+  console.log('hi there')
+  res.sendFile(__dirname + '/index.html')
+})
+
 const port = process.env.PORT || 3000
 express.listen(port, () => console.log(`Webhook server is listening, port ${port}`))
 
@@ -181,8 +186,4 @@ eventHub.on('sync', async () => {
   setInterval(() => {
     getCurrentlyPlaying(leader)
   }, 5000)
-})
-
-eventHub.on('authRecieved', async recievedAuth => {
-  authorizedUsers.push(recievedAuth)
 })
