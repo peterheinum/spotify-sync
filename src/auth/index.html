@@ -6,11 +6,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <style>
+    * {
+      padding: 0;
+      margin: 0;
+    }
     .body {
-      background-color: green;
+      
     }
 
     button {
+      border-radius: 10px;
       display: inline-block;
       border: none;
       padding: 1rem 2rem;
@@ -52,32 +57,66 @@
       width: 50vw;
       display: flex;
       justify-content: center;
+      flex-direction: column;
+    }
+    .rounded {
+      border-radius: 50%;
+      height: 30px;
+      width: 30px;
+    }
+    .flex {
+      display:flex;
+      align-items: center;
+    }
+    h4 {
+      font-family:'Courier New', Courier, monospace;
+      margin-left: 10px;
     }
   </style>
   <title>Sync</title>
 </head>
 
 <body>
-  <button id="checkStatusBtn">Check who is here</button>
-  <button id="syncBtn">Sync</button>
+  <div class="flex" style="justify-content: center;margin-right:10px;"> 
+    <button id="checkStatusBtn">Check who is here</button>
+    <button id="syncBtn">Sync</button>
+  </div>
   <div class="container">
-
+    <!-- <div class="flex">
+      <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
+      <h4>Peter Heinum</h4>
+    </div>
+    <div class="flex">
+      <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
+      <h4>Peter Heinum</h4>
+    </div> -->
+    
   </div>
 </body>
 <script>
   const toJson = res => res.json()
   const login = () => {
+
     fetch('/api/listUsers')
       .then(toJson)
-      .then(response => {
-        console.log(response)
+      .then(users => {
         const container = document.querySelector('.container')
-        response.forEach(usr => {
-          const id = usr.access_token.slice(0, 5)
-          const item = document.createElement("div")
-          item.innerHTML = id
-          container.appendChild(item)
-          container.appendChild(document.createElement("hr"))
+        container.childNodes.forEach(child => container.removeChild(child))
+
+        users.forEach(user => {
+          const smallHolder = document.createElement('div')
+          smallHolder.className = 'flex'
+          container.appendChild(smallHolder)
+          
+          const { displayName, url } = user
+          const profilePicture = document.createElement('img')
+          profilePicture.src = url
+          profilePicture.className = 'rounded'
+          smallHolder.appendChild(profilePicture)
+
+          const name = document.createElement('h4')
+          name.innerHTML = displayName
+          smallHolder.appendChild(name)
         })
       })
   }

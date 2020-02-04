@@ -3,7 +3,10 @@ const express = require('express')()
 const bodyParser = require('body-parser')
 const _request = require('request')
 const compression = require('compression')
+
+//Utils & Shared variables
 const { authorizedUsers } = require('./store/store.js')
+const { eventHub, authHeaders } = require('./utils/helpers')
 
 //Express config
 express.use(compression())
@@ -15,7 +18,6 @@ express.use('/api/', require('./services/api'))
 const port = process.env.PORT || 3000
 express.listen(port, () => console.log(`Webhook server is listening, port ${port}`))
 
-const { eventHub } = require('./utils/helpers')
 
 const auth = {
   access_token: '',
@@ -96,14 +98,6 @@ const reset_variables = () => {
 const track_on_track = (progress_ms) =>
   progress_ms + 200 > track.progress_ms &&
   progress_ms - 200 < track.progress_ms
-
-const authHeaders = ({ access_token }) => ({
-  headers: {
-    'Authorization': 'Bearer ' + access_token,
-    'Accept': 'application/json',
-    'Content-Type': 'application/json'
-  }
-})
 
 const getCurrentlyPlaying = async user => {
   const url = 'https://api.spotify.com/v1/me/player'
