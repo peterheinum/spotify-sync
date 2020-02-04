@@ -15,8 +15,7 @@ express.use(bodyParser.urlencoded({ extended: true }))
 express.use('/', require('./auth/spotifyAuth'))
 express.use('/api/', require('./services/api'))
 
-express.use('/home', (req, res) => {
-  console.log('hi there')
+express.use('/home/:user', (req, res) => {
   res.sendFile(__dirname + '/index.html')
 })
 
@@ -49,22 +48,12 @@ const track = {
   last_sync_id: '',
 }
 
-
-const auth_headers = () => ({
-  'Authorization': 'Bearer ' + authorizedUsers[0].access_token,
-  'Accept': 'application/json',
-  'Content-Type': 'application/json'
-})
-
-const request = async ({ options, method }) => {
-  !options['headers'] && (options['headers'] = auth_headers())
-  return new Promise((res, rej) => {
-    _request[method](options, (err, response, body) => {
-      err && rej(err)
-      body && res(body)
-    })
+const request = async ({ options, method }) => new Promise((resolve, reject) => {
+  _request[method](options, (err, response, body) => {
+    err && reject(err)
+    body && resolve(body)
   })
-}
+})
 
 
 const getSongInSync = async () => {
@@ -153,37 +142,18 @@ const setCurrentlyPlaying = async user => {
     })
 }
 
-const test = async user => {
-  const url = 'https://api.spotify.com/v1/me/player/play'
-
-  const body = {
-    "uris": ["spotify:track:561F1zqRwGPCTMRsLsXVtL"],
-    "position_ms": track.progress_ms
-  }
-  
-
-  const options = { url, body, json: true, ...authHeaders(user) }
-  console.log(options)
-  request({ options, method: 'put' })
-    .then(response => {
-      console.log(response)
-    })
-    .catch(err => {
-      console.log(err)
-    })
-}
-
 const broadCastSong = () => {
   const [_, ...followers] = authorizedUsers
-  followers.forEach(follower => setCurrentlyPlaying(follower))
+  followers.filter(({ isActive }) => isActive).forEach(follower => setCurrentlyPlaying(follower))
 }
 
 eventHub.on('sync', async () => {
   const [leader] = authorizedUsers
-  const success = await getCurrentlyPlaying(leader)
-  // success && test(leader)
-  success && broadCastSong()
-  setInterval(() => {
-    getCurrentlyPlaying(leader)
-  }, 5000)
+  if (leader) {
+    const success = await getCurrentlyPlaying(leader)
+    success && broadCastSong()
+    setInterval(() => {
+      getCurrentlyPlaying(leader)
+    }, 5000)
+  }
 })

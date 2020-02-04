@@ -80,10 +80,6 @@
 </head>
 
 <body>
-  <!-- <div class="flex" style="justify-content: center;margin-right:10px;"> 
-    <button id="checkStatusBtn">Check who is here</button>
-    <button id="syncBtn">Sync</button>
-  </div> -->
   <div class="container">
     <!-- <div class="flex">
       <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
@@ -93,18 +89,24 @@
       <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
       <h4>Peter Heinum</h4>
     </div> -->
-    
+  </div>
+  <div class="flex" style="justify-content: center;margin-right:10px;position:absolute;top:90vh;left:15vw;"> 
+    <button id="joinBtn" style="margin-right:5px;">Join me</button>
+    <button id="removeBtn">Remove me</button>
   </div>
 </body>
 <script>
   const toJson = res => res.json()
+  const sleep = async time => new Promise(resolve => setTimeout(() => resolve(), time))
+  const addEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).addEventListener(trigger, fn)
+
   const showUsers = () => {
     fetch('/api/listUsers')
       .then(toJson)
       .then(users => {
         const container = document.querySelector('.container')
         container.innerHTML = ''
-        users.forEach((user, index) => {
+        users.filter(({isActive}) => isActive).forEach((user, index) => {
           const smallHolder = document.createElement('div')
           smallHolder.className = 'flex m-top'
           container.appendChild(smallHolder)
@@ -123,7 +125,20 @@
       })
   }
 
-  const sleep = async time => new Promise(resolve => setTimeout(() => resolve(), time))
+  const error = () => alert('Error')
+  const removeMeFromSession = () => {
+    const [__, name] = window.location.href.split('/home/')
+    fetch(`/api/removeUser/${name}`)
+      .then(toJson)
+      .then(status => status ? showUsers() : error())
+  }
+
+  const joinMeToSession = () => {
+    const [__, name] = window.location.href.split('/home/')
+    fetch(`/api/joinUser/${name}`)
+      .then(toJson)
+      .then(status => status ? showUsers() : error())
+  }
 
   const init = async () => {
     //Constantly fetch users
@@ -134,6 +149,10 @@
     await sleep(300)
     showUsers()
   }
+
+  addEventListener('removeBtn', 'click', removeMeFromSession)
+  addEventListener('joinBtn', 'click', joinMeToSession)
+  
   init()
 </script>
 

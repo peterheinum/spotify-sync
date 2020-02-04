@@ -2,7 +2,7 @@ require('dotenv').config({ path: __dirname + '../../.env' })
 const express = require('express')
 const router = express.Router()
 const _request = require('request')
-const { authHeaders, eventHub } = require('../utils/helpers')
+const { authHeaders, eventHub, toHash } = require('../utils/helpers')
 const { authorizedUsers } = require('../store/store')
 
 const request = async ({ options, method }) => {
@@ -49,13 +49,17 @@ router.get('/callback', async (req, res) => {
   }
 
   const user = await request({ options, method: 'post' })
-  res.redirect('/home')
   const { url, displayName, email } = await getUserInfo(user)
 
+  //Creating user in the array
+  const hash = toHash(email)
+  res.redirect(`/home/${hash}`)
+
+  const isActive = true
   const existing = authorizedUsers.find(user => user.displayName == displayName)
   existing  
-    ? authorizedUsers.splice(authorizedUsers.indexOf(existing), 1, { ...user, url, displayName, email })
-    : authorizedUsers.push({ ...user, url, displayName, email })
+    ? authorizedUsers.splice(authorizedUsers.indexOf(existing), 1, { ...user, url, displayName, isActive })
+    : authorizedUsers.push({ ...user, url, displayName, hash, isActive })
     
   eventHub.emit('sync')
 })
