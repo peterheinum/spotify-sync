@@ -10,9 +10,8 @@
       padding: 0;
       margin: 0;
     }
-    .body {
-      
-    }
+
+    .body {}
 
     button {
       border-radius: 10px;
@@ -22,9 +21,9 @@
       margin: 0;
       text-decoration: none;
       background: #0069ed;
+
       color: #ffffff;
-      font-family: sans-serif;
-      font-size: 1rem;
+      font-size: 1.25rem;
       cursor: pointer;
       text-align: center;
       transition: background 250ms ease-in-out,
@@ -47,52 +46,101 @@
       transform: scale(0.99);
     }
 
+    html {
+      width: 100%;
+      height: 100%;
+    }
+
     body {
       width: 100%;
       height: 100%;
-      padding: 20px;
+      /* background-color: #2B2C32; */
+      background-color: #191414;
+      /* color: #2E2E32; */
+      color: white;
+      overflow-x: hidden;
+    }
+
+    .circle {
+      border-radius: 50%;
+      height: 20px;
+      width: 20px;
+    }
+
+    .green {
+      background-color: #1DB954;
     }
 
     .container {
-      width: 50vw;
+      width: 80vw;
       display: flex;
-      justify-content: center;
       flex-direction: column;
+      border: solid 0.5px whitesmoke;
+      border-radius: 8px;
+      justify-content: space-between;
+      height: 80%;
     }
+
+    .inner-container {
+      justify-content: center;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      justify-content: flex-start;
+    }
+
     .rounded {
       border-radius: 50%;
       height: 30px;
       width: 30px;
     }
+
     .flex {
-      display:flex;
-      align-items: center;
+      display: flex;
     }
+
     h4 {
-      font-family:'Courier New', Courier, monospace;
+      font-family: 'Courier New', Courier, monospace;
       margin-left: 10px;
     }
+    h1 {
+      font-family: 'Courier New', Courier, monospace;
+    }
+
     .m-top {
       margin-top: 10px;
+    }
+    .m-top-big {
+      margin-top: 40px;
+    }
+    .m-bottom {
+      margin-bottom: 10px;
+    }
+    .m-left {
+      margin-left: 10px;
+    }
+    .justify-center {
+      justify-content: center;
+    }
+    .align-center {
+      align-items: center;
+    }
+    .column {
+      flex-direction: column;
     }
   </style>
   <title>Sync</title>
 </head>
 
-<body>
-  <div class="container">
-    <!-- <div class="flex">
-      <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
-      <h4>Peter Heinum</h4>
+<body class="flex justify-center align-center column">
+<h1>Funky Room</h1>
+  <div class="container m-top-big">
+    <div class="inner-container align-center">
     </div>
-    <div class="flex">
-      <img class="rounded" src="https://scontent.xx.fbcdn.net/v/t31.0-1/p320x320/28701599_1813140132037618_1194675252092565981_o.jpg?_nc_cat=110&_nc_ohc=Du06D4HZqEkAX_MGzTR&_nc_ht=scontent.xx&_nc_tp=6&oh=cec9c0fbe25cf103a8acb9a1178cd3ff&oe=5EBE32C6"></img>
-      <h4>Peter Heinum</h4>
-    </div> -->
-  </div>
-  <div class="flex" style="justify-content: center;margin-right:10px;position:absolute;top:90vh;left:15vw;"> 
-    <button id="joinBtn" style="margin-right:5px;">Join me</button>
-    <button id="removeBtn">Remove me</button>
+    <div class="flex justify-center m-bottom">
+      <button id="joinBtn" class="green" style="margin-right:5px;">join</button>
+      <button id="removeBtn" style="border: solid 0.5px whitesmoke;background-color:#191414;">leave</button>
+    </div>
   </div>
 </body>
 <script>
@@ -104,23 +152,28 @@
     fetch('/api/listUsers')
       .then(toJson)
       .then(users => {
-        const container = document.querySelector('.container')
+        const container = document.querySelector('.inner-container')
         container.innerHTML = ''
-        users.filter(({isActive}) => isActive).forEach((user, index) => {
+        users.forEach((user, index) => {
           const smallHolder = document.createElement('div')
-          smallHolder.className = 'flex m-top'
+          smallHolder.className = 'flex m-top align-center'
           container.appendChild(smallHolder)
-          
-          const { displayName, url } = user
+
+          const { displayName, url, isActive } = user
           const profilePicture = document.createElement('img')
           profilePicture.src = url
           profilePicture.className = 'rounded'
           smallHolder.appendChild(profilePicture)
 
           const name = document.createElement('h4')
-          const suffix = index == 0 ? ' (dj)' : ''
+          const suffix = index == 0 && isActive ? ' (dj)' : ''
           name.innerHTML = displayName + suffix
           smallHolder.appendChild(name)
+          if (isActive) {
+            const status = document.createElement('div')
+            status.className = 'circle green m-left'
+            smallHolder.appendChild(status)
+          }
         })
       })
   }
@@ -152,7 +205,7 @@
 
   addEventListener('removeBtn', 'click', removeMeFromSession)
   addEventListener('joinBtn', 'click', joinMeToSession)
-  
+
   init()
 </script>
 
