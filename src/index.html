@@ -11,10 +11,8 @@
       margin: 0;
     }
 
-    .body {}
-
     button {
-      border-radius: 10px;
+      border-radius: 23px;
       display: inline-block;
       border: none;
       padding: 1rem 2rem;
@@ -32,15 +30,7 @@
       -moz-appearance: none;
     }
 
-    button:hover,
-    button:focus {
-      background: #0053ba;
-    }
-
-    button:focus {
-      outline: 1px solid #fff;
-      outline-offset: -4px;
-    }
+    button:focus {outline:0;}
 
     button:active {
       transform: scale(0.99);
@@ -54,9 +44,7 @@
     body {
       width: 100%;
       height: 100%;
-      /* background-color: #2B2C32; */
       background-color: #191414;
-      /* color: #2E2E32; */
       color: white;
       overflow-x: hidden;
     }
@@ -75,11 +63,12 @@
       width: 80vw;
       display: flex;
       flex-direction: column;
-      border: solid 0.5px whitesmoke;
+      /* border: solid 0.5px whitesmoke; */
       border-radius: 8px;
       justify-content: space-between;
       height: 80%;
     }
+    
 
     .inner-container {
       justify-content: center;
@@ -103,6 +92,7 @@
       font-family: 'Courier New', Courier, monospace;
       margin-left: 10px;
     }
+
     h1 {
       font-family: 'Courier New', Courier, monospace;
     }
@@ -110,36 +100,91 @@
     .m-top {
       margin-top: 10px;
     }
+
     .m-top-big {
       margin-top: 40px;
     }
+
     .m-bottom {
       margin-bottom: 10px;
     }
+
     .m-left {
       margin-left: 10px;
     }
+
     .justify-center {
       justify-content: center;
     }
+
     .align-center {
       align-items: center;
     }
+
     .column {
       flex-direction: column;
+    }
+
+    .go-green {
+      animation: goGreen 1s;
+    }
+
+    @keyframes goGreen {
+      0% {
+        border: solid 0.5px whitesmoke;
+        background: #191414;
+      }
+      
+      99% {
+        border: none; 
+      } 
+      100% {
+        background: #1DB954;
+      }
+    }
+
+    .go-black {
+      animation: goBlack 1s;
+    }
+    
+    @keyframes goBlack {
+      0% {
+        background: #1DB954;
+        border: none; 
+      }
+      
+      99% {
+        border: solid 0.5px whitesmoke;
+      } 
+      100% {
+        background: #191414;
+      }
+    }
+
+
+    .hide {
+      display: none;
+    }
+
+    .show {
+      display: block;
+    }
+    .removeButton {
+      border: solid 0.5px whitesmoke;
+      background-color:#191414;
     }
   </style>
   <title>Sync</title>
 </head>
 
 <body class="flex justify-center align-center column">
-<h1>Funky Room</h1>
+  <h1>Funky Room</h1>
   <div class="container m-top-big">
     <div class="inner-container align-center">
     </div>
     <div class="flex justify-center m-bottom">
-      <button id="joinBtn" class="green" style="margin-right:5px;">join</button>
-      <button id="removeBtn" style="border: solid 0.5px whitesmoke;background-color:#191414;">leave</button>
+      <!-- <button id="joinBtn" class="green" style="margin-right:5px;">join</button> -->
+      <button id="uniBtn" class="removeButton">leave</button>
     </div>
   </div>
 </body>
@@ -147,6 +192,33 @@
   const toJson = res => res.json()
   const sleep = async time => new Promise(resolve => setTimeout(() => resolve(), time))
   const addEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).addEventListener(trigger, fn)
+  const removeEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).removeEventListener(trigger, fn)
+
+  const createProfileElement = (url, parent) => {
+    const profilePicture = document.createElement('img')
+    profilePicture.src = url
+    profilePicture.className = 'rounded'
+    parent.appendChild(profilePicture)
+  }
+
+  const createNameAndStatusElement = (displayName, index, isActive, parent) => {
+    const name = document.createElement('h4')
+    const suffix = index == 0 && isActive ? ' (dj)' : ''
+    name.innerHTML = displayName + suffix
+    parent.appendChild(name)
+    if (isActive) {
+      const status = document.createElement('div')
+      status.className = 'circle green m-left'
+      parent.appendChild(status)
+    }
+  }
+
+  const createContainerElement = parent => {
+    const innerContainer = document.createElement('div')
+    innerContainer.className = 'flex m-top align-center'
+    parent.appendChild(innerContainer)
+    return innerContainer
+  }
 
   const showUsers = () => {
     fetch('/api/listUsers')
@@ -155,32 +227,44 @@
         const container = document.querySelector('.inner-container')
         container.innerHTML = ''
         users.forEach((user, index) => {
-          const smallHolder = document.createElement('div')
-          smallHolder.className = 'flex m-top align-center'
-          container.appendChild(smallHolder)
-
           const { displayName, url, isActive } = user
-          const profilePicture = document.createElement('img')
-          profilePicture.src = url
-          profilePicture.className = 'rounded'
-          smallHolder.appendChild(profilePicture)
 
-          const name = document.createElement('h4')
-          const suffix = index == 0 && isActive ? ' (dj)' : ''
-          name.innerHTML = displayName + suffix
-          smallHolder.appendChild(name)
-          if (isActive) {
-            const status = document.createElement('div')
-            status.className = 'circle green m-left'
-            smallHolder.appendChild(status)
-          }
+          const innerContainer = createContainerElement(container)
+          createProfileElement(url, innerContainer)
+          createNameAndStatusElement(displayName, index, isActive, innerContainer)
         })
       })
   }
 
+  const showJoinButton = async () => {
+    const el = document.querySelector('#uniBtn')
+    el.classList.add('go-green')
+    await sleep(900)
+    el.classList.remove('removeButton')
+    el.classList.add('green')
+    await sleep(50)
+    el.innerHTML = 'join'
+    removeEventListener('uniBtn', 'click', removeMeFromSession)
+    addEventListener('uniBtn', 'click', joinMeToSession)
+  }
+
+  const showLeaveButton = async () => {
+    const el = document.querySelector('#uniBtn')
+    el.classList.add('go-black')
+    await sleep(900)
+    el.classList.remove('green')
+    el.classList.add('removeButton')
+    el.innerHTML = 'leave'
+    await sleep(50)
+    removeEventListener('uniBtn', 'click', joinMeToSession)
+    addEventListener('uniBtn', 'click', removeMeFromSession)
+  }
+
+  //Todo improve
   const error = () => alert('Error')
   const removeMeFromSession = () => {
     const [__, name] = window.location.href.split('/home/')
+    showJoinButton()
     fetch(`/api/removeUser/${name}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
@@ -188,23 +272,22 @@
 
   const joinMeToSession = () => {
     const [__, name] = window.location.href.split('/home/')
+    showLeaveButton()
     fetch(`/api/joinUser/${name}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
   }
 
   const init = async () => {
-    //Constantly fetch users
     setInterval(() => {
       showUsers()
     }, 5000)
 
-    await sleep(300)
+    await sleep(100)
     showUsers()
   }
 
-  addEventListener('removeBtn', 'click', removeMeFromSession)
-  addEventListener('joinBtn', 'click', joinMeToSession)
+  addEventListener('uniBtn', 'click', removeMeFromSession)
 
   init()
 </script>
