@@ -229,6 +229,10 @@
     return innerContainer
   }
 
+  const sync = () => {
+    fetch('/api/sync')
+  }
+
   const showUsers = () => {
     fetch('/api/listUsers')
       .then(toJson)
@@ -257,6 +261,7 @@
     el.innerHTML = 'join'
     removeEventListener('uniBtn', 'click', removeMeFromSession)
     addEventListener('uniBtn', 'click', joinMeToSession)
+    sync()
   }
   
   const showLeaveButton = async () => {
@@ -271,6 +276,7 @@
     await sleep(50)
     removeEventListener('uniBtn', 'click', joinMeToSession)
     addEventListener('uniBtn', 'click', removeMeFromSession)
+    sync()
   }
 
   //Todo improve
