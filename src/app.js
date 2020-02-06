@@ -129,7 +129,7 @@ const setCurrentlyPlaying = async user => {
   const { id, progress_ms } = track
   const body = {
     "uris": ["spotify:track:" + id],
-    "position_ms": progress_ms + 1000
+    "position_ms": progress_ms
   }
 
   const options = { url, body, json: true, ...authHeaders(user) }
@@ -160,7 +160,16 @@ eventHub.on('sync', async () => {
 })
 
 eventHub.on('syncUser', async user => {
+  const startPinging = user => {
+    setCurrentlyPlaying(user)
+    setInterval(() => {
+      const [leader] = authorizedUsers
+      getCurrentlyPlaying(leader)
+    }, 5000)
+  }
+
   authorizedUsers.length > 1 
-    ? setCurrentlyPlaying(user)
+    ? startPinging(user)
     : getCurrentlyPlaying(user)
+  
 })
