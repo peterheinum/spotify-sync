@@ -102,13 +102,13 @@ const getCurrentlyPlaying = async user => {
 
   if (response.error) {
     eventHub.emit('renew_spotify_token')
-    return Promise.resolve(false)
+    return 
   }
 
   const { item, progress_ms, is_playing } = JSON.parse(response)
 
   if (!item) {
-    return Promise.resolve(false)
+    return 
   }
 
   const { id, album, artists, duration_ms } = item
@@ -118,9 +118,9 @@ const getCurrentlyPlaying = async user => {
     Object.assign(track, { id, tick, album, artists, duration_ms, progress_ms, is_playing, last_sync_id: id })
     getSongInSync()
     broadCastSong()
-    return Promise.resolve(true)
+    return
   }
-  return Promise.resolve(false)
+  return 
 }
 
 
@@ -157,7 +157,7 @@ eventHub.on('sync', async () => {
   const [leader] = authorizedUsers
   if (leader) {
     const success = await getCurrentlyPlaying(leader)
-    success && broadCastSong()
+    broadCastSong()
     setInterval(() => {
       getCurrentlyPlaying(leader)
     }, 5000)
