@@ -94,7 +94,6 @@ const track_on_track = (progress_ms) =>
   progress_ms - 200 < track.progress_ms
 
 const getCurrentlyPlaying = async user => {
-  console.log('PING')
   const url = 'https://api.spotify.com/v1/me/player'
 
   const options = { url }
@@ -145,7 +144,13 @@ const setCurrentlyPlaying = async user => {
 
 const broadCastSong = () => {
   const [_, ...followers] = authorizedUsers
-  followers.filter(e => e.isActive).forEach(follower => setCurrentlyPlaying(follower))
+  console.log(followers.filter(e => e.isActive))
+
+  followers.filter(e => e.isActive).forEach(follower => {
+    console.log(follower)
+    console.log('yeet')
+    setCurrentlyPlaying(follower)
+  })
 }
 
 eventHub.on('sync', async () => {
