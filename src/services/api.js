@@ -29,12 +29,12 @@ router.get('/joinUser/:hash', async (req, res) => {
 
 router.get('/sync', async (req, res) => {
   res.send(
-    authorizedUsers.length > 1
+    authorizedUsers.length
       ? { status: 1, message: 'Sync will start' }
       : { status: 0, message: 'Not enough people' }
   )
 
-  authorizedUsers.length > 1 && eventHub.emit('sync')
+  authorizedUsers.length && eventHub.emit('sync')
 })
 
 

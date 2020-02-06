@@ -57,11 +57,12 @@ router.get('/callback', async (req, res) => {
 
   const isActive = true
   const existing = authorizedUsers.find(user => user.displayName == displayName)
+  const newUser = { ...user, url, displayName, isActive }
   existing  
-    ? authorizedUsers.splice(authorizedUsers.indexOf(existing), 1, { ...user, url, displayName, isActive })
-    : authorizedUsers.push({ ...user, url, displayName, hash, isActive })
+    ? authorizedUsers.splice(authorizedUsers.indexOf(existing), 1, newUser)
+    : authorizedUsers.push(newUser)
     
-  eventHub.emit('sync')
+  eventHub.emit('syncUser', newUser)
 })
 
 

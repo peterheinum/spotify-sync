@@ -261,7 +261,6 @@
     el.innerHTML = 'join'
     removeEventListener('uniBtn', 'click', removeMeFromSession)
     addEventListener('uniBtn', 'click', joinMeToSession)
-    sync()
   }
   
   const showLeaveButton = async () => {
@@ -282,28 +281,31 @@
   //Todo improve
   const error = () => alert('Error')
   const removeMeFromSession = () => {
-    const [__, name] = window.location.href.split('/home/')
+    const [__, hash] = window.location.href.split('/home/')
     showJoinButton()
-    fetch(`/api/removeUser/${name}`)
+    fetch(`/api/removeUser/${hash}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
   }
 
   const joinMeToSession = () => {
-    const [__, name] = window.location.href.split('/home/')
+    const [__, hash] = window.location.href.split('/home/')
     showLeaveButton()
-    fetch(`/api/joinUser/${name}`)
+    fetch(`/api/joinUser/${hash}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
   }
 
   const init = async () => {
-    setInterval(() => {
+    const [__, hash] = window.location.href.split('/home/')
+    if(hash) {
+      setInterval(() => {
+        showUsers()
+      }, 5000)
+      
+      await sleep(100)
       showUsers()
-    }, 5000)
-
-    await sleep(100)
-    showUsers()
+    }
   }
 
   addEventListener('uniBtn', 'click', removeMeFromSession)

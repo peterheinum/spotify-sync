@@ -96,19 +96,18 @@ const track_on_track = (progress_ms) =>
 const getCurrentlyPlaying = async user => {
   const url = 'https://api.spotify.com/v1/me/player'
 
-  const options = { url }
+  const options = { url, ...authHeaders(user) }
   const tick = Date.now()
-  const response = await request({ options, method: 'get', ...authHeaders(user) })
+  const response = await request({ options, method: 'get' })
 
   if (response.error) {
     eventHub.emit('renew_spotify_token')
-    return 
+    return Promise.resolve() 
   }
-
+  
   const { item, progress_ms, is_playing } = JSON.parse(response)
-
   if (!item) {
-    return 
+    return Promise.resolve() 
   }
 
   const { id, album, artists, duration_ms } = item
@@ -119,9 +118,9 @@ const getCurrentlyPlaying = async user => {
     Object.assign(track, { id, tick, album, artists, duration_ms, progress_ms, is_playing, last_sync_id: id })
     getSongInSync()
     broadCastSong()
-    return
+    return Promise.resolve()
   }
-  return 
+  return Promise.resolve() 
 }
 
 
@@ -132,9 +131,6 @@ const setCurrentlyPlaying = async user => {
     "uris": ["spotify:track:" + id],
     "position_ms": progress_ms + 1000
   }
-  console.log('____________')
-  console.log(body)
-  console.log('____________')
 
   const options = { url, body, json: true, ...authHeaders(user) }
   request({ options, method: 'put', log: true })
@@ -148,22 +144,21 @@ const setCurrentlyPlaying = async user => {
 
 const broadCastSong = () => {
   const [_, ...followers] = authorizedUsers
-  console.log(followers.filter(e => e.isActive))
 
-  followers.filter(e => e.isActive).forEach(follower => {
-    console.log(follower)
-    console.log('yeet')
-    setCurrentlyPlaying(follower)
-  })
+  followers.filter(e => e.isActive).forEach(follower => setCurrentlyPlaying(follower))
 }
 
 eventHub.on('sync', async () => {
   const [leader] = authorizedUsers
   if (leader) {
-    const success = await getCurrentlyPlaying(leader)
+    await getCurrentlyPlaying(leader)
     broadCastSong()
     setInterval(() => {
       getCurrentlyPlaying(leader)
     }, 5000)
   }
+})
+
+eventHub.on('syncUser', async user => {
+  setCurrentlyPlaying(user)
 })
