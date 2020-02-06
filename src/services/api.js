@@ -12,9 +12,11 @@ router.get('/listUsers', async (req, res) => {
 router.get('/removeUser/:hash', async (req, res) => {
   const { hash } = req.params
   const match = authorizedUsers.find(user => user.hash == hash)
-  match.isActive = false
-  authorizedUsers.splice(authorizedUsers.indexOf(match), 1)
-  authorizedUsers.push(match)
+  if(match) {
+    match.isActive = false
+    authorizedUsers.splice(authorizedUsers.indexOf(match), 1)
+    authorizedUsers.push(match)
+  }
   res.send(!!match)
 })
 
