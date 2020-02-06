@@ -112,6 +112,7 @@ const getCurrentlyPlaying = async user => {
   }
 
   const { id, album, artists, duration_ms } = item
+  Object.assign(track, { id })
   if (is_playing && id !== track.last_sync_id && !track_on_track()) {
     reset_variables()
     clearInterval(_interval)
@@ -131,6 +132,9 @@ const setCurrentlyPlaying = async user => {
     "uris": ["spotify:track:" + id],
     "position_ms": progress_ms + 1000
   }
+  console.log('____________')
+  console.log(body)
+  console.log('____________')
 
   const options = { url, body, json: true, ...authHeaders(user) }
   request({ options, method: 'put', log: true })
