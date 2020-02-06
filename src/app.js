@@ -160,5 +160,7 @@ eventHub.on('sync', async () => {
 })
 
 eventHub.on('syncUser', async user => {
-  setCurrentlyPlaying(user)
+  authorizedUsers.length > 1 
+    ? setCurrentlyPlaying(user)
+    : getCurrentlyPlaying(user)
 })
