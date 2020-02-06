@@ -1,5 +1,5 @@
 const EventEmitter = require('events')
-class EventHub extends EventEmitter {}
+class EventHub extends EventEmitter { }
 const eventHub = new EventHub()
 
 const authHeaders = ({ access_token }) => ({
@@ -20,4 +20,10 @@ const toHash = str => {
   return hash
 }
 
-module.exports = { eventHub, authHeaders, toHash }
+const get = (key, obj) =>
+  obj.hasOwnProperty(key)
+    ? obj[key]
+    : {}
+
+
+module.exports = { eventHub, authHeaders, toHash, get }

@@ -18,24 +18,28 @@
       padding: 1rem 2rem;
       margin: 0;
       text-decoration: none;
-      background: #0069ed;
       min-height: 55.67px;
       min-width: 95px;
       color: #ffffff;
       font-size: 1.25rem;
       cursor: pointer;
       text-align: center;
-      transition: background 250ms ease-in-out,
-        transform 150ms ease;
       -webkit-appearance: none;
       -moz-appearance: none;
+      user-select: none;
+      -moz-user-select: none;
+      -khtml-user-select: none;
+      -webkit-user-select: none;
+      -o-user-select: none;
     }
 
-    button:focus {outline:0;}
+    button:focus {
+      outline: 0;
+    }
 
-    button:active {
+    /* button:active {
       transform: scale(0.99);
-    }
+    } */
 
     html {
       width: 100%;
@@ -73,7 +77,7 @@
       justify-content: space-between;
       height: 80%;
     }
-    
+
 
     .inner-container {
       justify-content: center;
@@ -140,10 +144,11 @@
         background: #191414;
         width: 112px;
       }
-      
+
       99% {
-        border: none; 
-      } 
+        border: none;
+      }
+
       100% {
         width: 95px;
         background: #1DB954;
@@ -153,17 +158,18 @@
     .go-black {
       animation: goBlack 1s;
     }
-    
+
     @keyframes goBlack {
       0% {
         background: #1DB954;
-        border: none; 
+        border: none;
         width: 95px;
       }
-      
+
       99% {
         border: solid 0.5px whitesmoke;
-      } 
+      }
+
       100% {
         width: 112px;
         background: #191414;
@@ -178,10 +184,12 @@
     .show {
       display: block;
     }
+
     .removeButton {
       border: solid 0.5px whitesmoke;
-      background-color:#191414;
+      background-color: #191414;
     }
+
   </style>
   <title>Sync</title>
 </head>
@@ -192,7 +200,6 @@
     <div class="inner-container align-center">
     </div>
     <div class="flex justify-center m-bottom">
-      <!-- <button id="joinBtn" class="green" style="margin-right:5px;">join</button> -->
       <button id="uniBtn" class="removeButton">leave</button>
     </div>
   </div>
@@ -202,6 +209,11 @@
   const sleep = async time => new Promise(resolve => setTimeout(() => resolve(), time))
   const addEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).addEventListener(trigger, fn)
   const removeEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).removeEventListener(trigger, fn)
+  
+  const userId = () => {
+    const [__, hash] = window.location.href.split('/home/')
+    return hash
+  }
 
   const createProfileElement = (url, parent) => {
     const profilePicture = document.createElement('img')
@@ -224,13 +236,13 @@
 
   const createContainerElement = parent => {
     const innerContainer = document.createElement('div')
-    innerContainer.className = 'flex m-top align-center'
+    innerContainer.className = 'flex m-top align-center flex-start'
     parent.appendChild(innerContainer)
     return innerContainer
   }
 
   const sync = () => {
-    fetch('/api/sync')
+    fetch(`/api/sync/${userId()}`)
   }
 
   const showUsers = () => {
@@ -262,7 +274,7 @@
     removeEventListener('uniBtn', 'click', removeMeFromSession)
     addEventListener('uniBtn', 'click', joinMeToSession)
   }
-  
+
   const showLeaveButton = async () => {
     const el = document.querySelector('#uniBtn')
     el.classList.add('go-black')
@@ -281,28 +293,25 @@
   //Todo improve
   const error = () => alert('Error')
   const removeMeFromSession = () => {
-    const [__, hash] = window.location.href.split('/home/')
     showJoinButton()
-    fetch(`/api/removeUser/${hash}`)
+    fetch(`/api/removeUser/${userId()}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
   }
 
   const joinMeToSession = () => {
-    const [__, hash] = window.location.href.split('/home/')
     showLeaveButton()
-    fetch(`/api/joinUser/${hash}`)
+    fetch(`/api/joinUser/${userId()}`)
       .then(toJson)
       .then(status => status ? showUsers() : error())
   }
 
   const init = async () => {
-    const [__, hash] = window.location.href.split('/home/')
-    if(hash) {
+    if (userId()) {
       setInterval(() => {
         showUsers()
       }, 5000)
-      
+
       await sleep(100)
       showUsers()
     }

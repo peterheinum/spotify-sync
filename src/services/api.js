@@ -6,35 +6,39 @@ const { eventHub } = require('../utils/helpers.js')
 
 
 router.get('/listUsers', async (req, res) => {
-  res.send(authorizedUsers)
+  res.send(authorizedUsers.map(({ displayName, url, isActive }) => ({ displayName, url, isActive })))
 })
 
 router.get('/removeUser/:hash', async (req, res) => {
   const { hash } = req.params
-  const match = authorizedUsers.find(user => user.hash == hash)
-  if(match) {
-    match.isActive = false
-    authorizedUsers.splice(authorizedUsers.indexOf(match), 1)
-    authorizedUsers.push(match)
+  const user = authorizedUsers.find(user => user.hash == hash)
+  if(user) {
+    user.isActive = false
+    authorizedUsers.splice(authorizedUsers.indexOf(user), 1)
+    authorizedUsers.push(user)
   }
-  res.send(!!match)
+  res.send(!!user)
 })
 
 router.get('/joinUser/:hash', async (req, res) => {
   const { hash } = req.params
-  const match = authorizedUsers.find(user => user.hash == hash)
-  match.isActive = true
-  res.send(!!match)
+  const user = authorizedUsers.find(user => user.hash == hash)
+  if(user) {
+    user.isActive = true
+  }
+  res.send(!!user)
 })
 
-router.get('/sync', async (req, res) => {
+router.get('/sync/:hash', async (req, res) => {
+  const hash = req.params
+  const user = authorizedUsers.find(user => user.hash == hash)
   res.send(
-    authorizedUsers.length
+    user
       ? { status: 1, message: 'Sync will start' }
       : { status: 0, message: 'Not enough people' }
   )
 
-  authorizedUsers.length && eventHub.emit('sync')
+  user && eventHub.emit('syncUser', user)
 })
 
 

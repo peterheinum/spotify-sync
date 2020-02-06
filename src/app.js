@@ -6,7 +6,7 @@ const compression = require('compression')
 
 //Utils & Shared variables
 const { authorizedUsers } = require('./store/store.js')
-const { eventHub, authHeaders } = require('./utils/helpers')
+const { eventHub, authHeaders, get } = require('./utils/helpers')
 
 //Express config
 express.use(compression())
@@ -21,12 +21,6 @@ express.use('/home/:user', (req, res) => {
 
 const port = process.env.PORT || 3000
 express.listen(port, () => console.log(`Webhook server is listening, port ${port}`))
-
-
-const auth = {
-  access_token: '',
-  refresh_token: ''
-}
 
 let _interval
 
@@ -123,6 +117,13 @@ const getCurrentlyPlaying = async user => {
   return Promise.resolve() 
 }
 
+const getCurrentTrackId = async user => {
+  const url = 'https://api.spotify.com/v1/me/player'
+  const options = { url, ...authHeaders(user) }
+  const response = await request({ options, method: 'get' })
+  return get('id', get('item', JSON.parse(response)))
+}
+
 
 const setCurrentlyPlaying = async user => {
   const url = 'https://api.spotify.com/v1/me/player/play'
@@ -144,27 +145,29 @@ const setCurrentlyPlaying = async user => {
 
 const broadCastSong = () => {
   const [_, ...followers] = authorizedUsers
-
   followers.filter(e => e.isActive).forEach(follower => setCurrentlyPlaying(follower))
 }
 
-eventHub.on('sync', async () => {
-  const [leader] = authorizedUsers
-  if (leader) {
-    await getCurrentlyPlaying(leader)
-    broadCastSong()
-    setInterval(() => {
-      getCurrentlyPlaying(leader)
-    }, 5000)
-  }
-})
+const playSameSongs = async () => {
+  const [leader, ...followers] = authorizedUsers
+  await getCurrentTrackId(leader)
+  const songIds = [{ id: track.id, access_token: leader.access_token }]
+
+  for (let i = 0; i < followers.length; i++) {
+    const { access_token } = followers[i]
+    const id = await getCurrentTrackId({ access_token })
+    songIds.push({ id, access_token })
+  }  
+  
+  const [__, ...rest] = songIds
+  rest.filter(x => x.id != track.id).forEach(user => setCurrentlyPlaying(user))
+}
 
 eventHub.on('syncUser', async user => {
   const startPinging = user => {
     setCurrentlyPlaying(user)
     setInterval(() => {
-      const [leader] = authorizedUsers
-      getCurrentlyPlaying(leader)
+      playSameSongs()
     }, 5000)
   }
 
