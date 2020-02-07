@@ -125,14 +125,14 @@ const getCurrentTrackId = async user => {
 }
 
 
-const setCurrentlyPlaying = async user => {
+const setCurrentlyPlaying = async (user, log) => {
   const url = 'https://api.spotify.com/v1/me/player/play'
   const { id, progress_ms } = track
   const body = {
     "uris": ["spotify:track:" + id],
     "position_ms": progress_ms
   }
-
+  log && console.log(body)
   const options = { url, body, json: true, ...authHeaders(user) }
   request({ options, method: 'put', log: true })
     .then(response => {
@@ -160,7 +160,12 @@ const playSameSongs = async () => {
   }  
   
   console.log({songIds})
-  songIds.filter(x => x.id != track.id).forEach(user => user.isActive && setCurrentlyPlaying(user))
+  songIds.filter(x => x.id != track.id).forEach(user => {
+    console.log(user.isActive)
+    console.log('_______')
+    user.isActive && setCurrentlyPlaying(user, true)
+
+  })
 }
 
 eventHub.on('syncUser', async user => {
