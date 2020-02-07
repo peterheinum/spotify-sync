@@ -151,7 +151,7 @@ const broadCastSong = () => {
 const playSameSongs = async () => {
   const [leader, ...followers] = authorizedUsers
   await getCurrentTrackId(leader)
-  const songIds = [{ id: track.id, access_token: leader.access_token }]
+  const songIds = []
 
   for (let i = 0; i < followers.length; i++) {
     const { access_token } = followers[i]
@@ -159,8 +159,8 @@ const playSameSongs = async () => {
     songIds.push({ id, access_token })
   }  
   
-  const [__, ...rest] = songIds
-  rest.filter(x => x.id != track.id).forEach(user => setCurrentlyPlaying(user))
+  console.log({songIds})
+  songIds.filter(x => x.id != track.id).forEach(user => user.isActive && setCurrentlyPlaying(user))
 }
 
 eventHub.on('syncUser', async user => {
