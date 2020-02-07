@@ -154,9 +154,9 @@ const playSameSongs = async () => {
   const songIds = []
 
   for (let i = 0; i < followers.length; i++) {
-    const { access_token } = followers[i]
+    const { access_token, isActive } = followers[i]
     const id = await getCurrentTrackId({ access_token })
-    songIds.push({ id, access_token })
+    songIds.push({ id, access_token, isActive })
   }  
   
   console.log({songIds})
