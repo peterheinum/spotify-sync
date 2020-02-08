@@ -66,7 +66,7 @@
 
     .message-popup {
       width: 90vw;
-      height: 8vh;
+      min-height: 8vh;
       background-color: rgb(150, 40, 50);
       border-radius: 5px;
       position: absolute;
@@ -295,7 +295,6 @@
     el.innerHTML = ''
     await sleep(900)
     el.classList.add('joinButton')
-    await sleep(50)
     el.innerHTML = 'join'
     removeEventListener('uniBtn', 'click', removeMeFromSession)
     addEventListener('uniBtn', 'click', joinMeToSession)
@@ -309,7 +308,6 @@
     await sleep(900)
     el.classList.add('removeButton')
     el.innerHTML = 'leave'
-    await sleep(50)
     removeEventListener('uniBtn', 'click', joinMeToSession)
     addEventListener('uniBtn', 'click', removeMeFromSession)
     sync()
@@ -327,17 +325,27 @@
   } 
 
   const removeMeFromSession = () => {
-    showJoinButton()
+    const success = () => {
+      showJoinButton()
+      showUsers()
+    }
+    
     fetch(`/api/removeUser/${userId()}`)
       .then(toJson)
-      .then(status => status ? showUsers() : error())
-  }
-
-  const joinMeToSession = () => {
-    showLeaveButton()
-    fetch(`/api/joinUser/${userId()}`)
+      .then(status => status ? success() : error())
+      .catch(error)
+    }
+    
+    const joinMeToSession = () => {
+      const success = () => {
+        showLeaveButton()
+        showUsers()
+      }
+      
+      fetch(`/api/joinUser/${userId()}`)
       .then(toJson)
-      .then(status => status ? showUsers() : error())
+      .then(status => status ? success() : error())
+      .catch(error)
   }
 
   const init = async () => {
