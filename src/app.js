@@ -93,7 +93,7 @@ const getCurrentlyPlaying = async user => {
   const options = { url, ...authHeaders(user) }
   const tick = Date.now()
   const response = await request({ options, method: 'get' })
-
+  
   if (response.error) {
     eventHub.emit('renew_spotify_token')
     return Promise.resolve() 
@@ -103,7 +103,7 @@ const getCurrentlyPlaying = async user => {
   if (!item) {
     return Promise.resolve() 
   }
-
+  
   const { id, album, artists, duration_ms } = item
   Object.assign(track, { id })
   if (is_playing && id !== track.last_sync_id && !track_on_track()) {
@@ -115,6 +115,18 @@ const getCurrentlyPlaying = async user => {
     return Promise.resolve()
   }
   return Promise.resolve() 
+}
+
+
+const setTrackId = () => {
+  const [dj] = authorizedUsers
+  const url = 'https://api.spotify.com/v1/me/player'
+  const options = { url, ...authHeaders(dj) }
+  const response = await request({ options, method: 'get' })
+  const tick = Date.now()
+  const { id, progress_ms, is_playing } = get('item', JSON.parse(response))
+  id && is_playing && Object.assign(track, { id, progress_ms, tick })
+  getSongInSync()
 }
 
 const getCurrentTrackId = async user => {
@@ -148,11 +160,12 @@ const broadCastSong = () => {
   followers.filter(e => e.isActive).forEach(follower => setCurrentlyPlaying(follower))
 }
 
-const playSameSongs = async () => {
-  const [leader, ...followers] = authorizedUsers
-  await getCurrentTrackId(leader)
+const syncUsers = async () => {
+  const [dj, ...followers] = authorizedUsers
+  const currentDjSongId = await getCurrentTrackId(dj)
   const songIds = []
-
+  track.id = currentDjSongId
+  console.log(track.id)
   for (let i = 0; i < followers.length; i++) {
     const { access_token, isActive } = followers[i]
     const id = await getCurrentTrackId({ access_token })
@@ -168,16 +181,16 @@ const playSameSongs = async () => {
   })
 }
 
+
 eventHub.on('syncUser', async user => {
-  const startPinging = user => {
+  const startPolling = user => {
     setCurrentlyPlaying(user)
     setInterval(() => {
-      playSameSongs()
+      syncUsers()
     }, 5000)
   }
 
-  authorizedUsers.length > 1 
-    ? startPinging(user)
-    : getCurrentlyPlaying(user)
-  
+  authorizedUsers.indexOf(user) == 0 
+    ? setTrackId()
+    : startPolling(user)
 })
