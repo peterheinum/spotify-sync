@@ -49,7 +49,7 @@ const request = async ({ options, method }) => new Promise((resolve, reject) => 
 })
 
 
-const getSongInSync = async () => {
+const getSongInSync = () => {
   const tock = Date.now() - track.tick
   const initial_track_progress = track.progress_ms + tock
   const progress_ms = track.progress_ms + tock
@@ -59,7 +59,7 @@ const getSongInSync = async () => {
 
   _interval = setInterval(() => {
     track.progress_ms = (Date.now() - initial_progress_ms) + initial_track_progress
-  }, 10)
+  }, 10 )
 }
 
 const reset_variables = () => {
@@ -108,6 +108,7 @@ const getCurrentlyPlaying = async user => {
     reset_variables()
     clearInterval(_interval)
     Object.assign(track, { id, tick, album, artists, duration_ms, progress_ms, is_playing, last_sync_id: id })
+    console.log(track.progress_ms)
     getSongInSync()
     broadCastSong()
     return Promise.resolve()
@@ -120,10 +121,15 @@ const setTrackId = async () => {
   const [dj] = authorizedUsers
   const url = 'https://api.spotify.com/v1/me/player'
   const options = { url, ...authHeaders(dj) }
-  const response = await request({ options, method: 'get' })
   const tick = Date.now()
-  const { id, progress_ms, is_playing } = get('item', JSON.parse(response))
-  id && is_playing && Object.assign(track, { id, progress_ms, tick })
+  const response = await request({ options, method: 'get' })
+  const { item, progress_ms, is_playing } = JSON.parse(response)
+  is_playing && Object.assign(track, { id: get('id', item), progress_ms, tick })
+  console.log(track.progress_ms)
+  setInterval(() => {
+    console.log(track.progress_ms)
+  }, 500); 
+  // getCurrentlyPlaying(dj)
   getSongInSync()
 }
 

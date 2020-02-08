@@ -77,6 +77,29 @@
       display: none;
     }
 
+    .tutorial-popup {
+      border-radius: 17px;
+      width: 90vw;
+      height: 95vh;
+      z-index: 2;
+      opacity: 0;
+      display: none;
+      background-color: yellow;
+      position: absolute;
+      top: 25px;
+    }
+
+    #tutorial-toggle {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      font-size: 38px;
+      text-align: center;
+      width: 50px;
+      height: 50px;
+      z-index: 3;
+    }
+
     .container {
       width: 80vw;
       display: flex;
@@ -141,13 +164,28 @@
     }
 
     .fade-out {
-      animation: fadeOut 1.5s;
+      animation: fadeOut 1s;
+    }
+
+    .fade-in {
+      animation: fadeIn 1s;
+    }
+
+    @keyframes fadeIn {
+      0% {
+        opacity: 0;
+      }
+
+      100% {
+        opacity: 1;
+      }
     }
 
     @keyframes fadeOut {
       0% {
         opacity: 1;
       }
+
       100% {
         opacity: 0;
       }
@@ -204,13 +242,16 @@
       border: solid 0.5px whitesmoke;
       background-color: #191414;
     }
-
   </style>
   <title>Sync</title>
 </head>
 
 <body class="flex justify-center align-center column">
   <h1>Funky Room</h1>
+  <div class="tutorial-popup">
+    <h2> Instructions </h2>
+  </div>
+  <!-- <a id="tutorial-toggle" onclick="tutorialPopup" class="green rounded">i</a> -->
   <div class="message-popup justify-center align-center"></div>
   <div class="container m-top-big">
     <div class="inner-container align-center">
@@ -221,20 +262,43 @@
   </div>
 </body>
 <script>
+  const tutorialPopup = () => document.querySelector('.tutorial-popup')
+
+  const openTutorialPopup = async () => {
+    console.log('opening')
+    const el = tutorialPopup()
+    el.style = 'display: flex;'
+    el.classList.add('fade-in')
+    await sleep(900)
+    el.style.opacity = 1
+    el.className += 'justify-center align-center' 
+    console.log(el.classList)
+  }
+  
+  const closeTutorialPopup = async () => {
+    console.log('closing')
+    const el = tutorialPopup()
+    el.classList.remove('fade-in')
+    el.classList.add('fade-out')
+    await sleep(900)
+    el.className = 'tutorial-popup'
+    el.style = 'display:none;'
+  }
+
   const toJson = res => res.json()
   const sleep = async time => new Promise(resolve => setTimeout(() => resolve(), time))
   const addEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).addEventListener(trigger, fn)
   const removeEventListener = (id, trigger, fn) => document.querySelector(`#${id}`).removeEventListener(trigger, fn)
-  
+
   const height = str => `height:${str}px;`
   const width = str => `width:${str}px;`
 
   const messagePopup = () => {
     const el = document.querySelector('.message-popup')
     el.style = 'display:flex;'
-    return el  
+    return el
   }
-  
+
   const userId = () => {
     const [__, hash] = window.location.href.split('/home/')
     return hash
@@ -267,7 +331,7 @@
     return innerContainer
   }
 
-  
+
   const sync = () => {
     fetch(`/api/sync/${userId()}`).then(res => !res && error('Sync failed'))
   }
@@ -299,7 +363,7 @@
     removeEventListener('uniBtn', 'click', removeMeFromSession)
     addEventListener('uniBtn', 'click', joinMeToSession)
   }
-  
+
   const showLeaveButton = async () => {
     const el = document.querySelector('#uniBtn')
     el.classList = []
@@ -317,32 +381,32 @@
   const error = async msg => {
     const el = messagePopup()
     el.innerHTML = msg || 'Something went wrong'
-    await sleep(2000) 
+    await sleep(2000)
     el.classList.add('fade-out')
-    await sleep(1500)
+    await sleep(1000)
     el.style = 'display:none;'
     el.classList.remove('fade-out')
-  } 
+  }
 
   const removeMeFromSession = () => {
     const success = () => {
       showJoinButton()
       showUsers()
     }
-    
+
     fetch(`/api/removeUser/${userId()}`)
       .then(toJson)
       .then(status => status ? success() : error())
       .catch(error)
+  }
+
+  const joinMeToSession = () => {
+    const success = () => {
+      showLeaveButton()
+      showUsers()
     }
-    
-    const joinMeToSession = () => {
-      const success = () => {
-        showLeaveButton()
-        showUsers()
-      }
-      
-      fetch(`/api/joinUser/${userId()}`)
+
+    fetch(`/api/joinUser/${userId()}`)
       .then(toJson)
       .then(status => status ? success() : error())
       .catch(error)
@@ -360,7 +424,10 @@
   }
 
   addEventListener('uniBtn', 'click', removeMeFromSession)
-
+  // addEventListener('tutorial-toggle', 'click', () =>
+  //   tutorialPopup().style.opacity == 1
+  //     ? closeTutorialPopup()
+  //     : openTutorialPopup())
   init()
 </script>
 
