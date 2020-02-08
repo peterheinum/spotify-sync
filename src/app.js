@@ -118,7 +118,7 @@ const getCurrentlyPlaying = async user => {
 }
 
 
-const setTrackId = () => {
+const setTrackId = async () => {
   const [dj] = authorizedUsers
   const url = 'https://api.spotify.com/v1/me/player'
   const options = { url, ...authHeaders(dj) }
