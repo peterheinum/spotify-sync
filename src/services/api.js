@@ -32,11 +32,7 @@ router.get('/joinUser/:hash', async (req, res) => {
 router.get('/sync/:hash', async (req, res) => {
   const hash = req.params
   const user = authorizedUsers.find(user => user.hash == hash)
-  res.send(
-    user
-      ? { status: 1, message: 'Sync will start' }
-      : { status: 0, message: 'Not enough people' }
-  )
+  res.send(!!user)
 
   user && eventHub.emit('syncUser', user)
 })

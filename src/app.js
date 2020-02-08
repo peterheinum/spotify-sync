@@ -38,7 +38,6 @@ const track = {
   progress_ms: 0,
   duration_ms: 0,
   is_playing: false,
-  duration_ms: 0,
   last_sync_id: '',
 }
 
@@ -78,7 +77,6 @@ const reset_variables = () => {
     progress_ms: 0,
     duration_ms: 0,
     is_playing: false,
-    duration_ms: 0,
     last_sync_id: '',
   })
 }
