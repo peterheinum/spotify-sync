@@ -192,7 +192,7 @@ eventHub.on('syncUser', async user => {
     setCurrentlyPlaying(user)
     setInterval(() => {
       syncUsers()
-    }, 5000)
+    }, 2500)
   }
 
   authorizedUsers.indexOf(user) == 0 
