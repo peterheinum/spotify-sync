@@ -62,7 +62,7 @@ const getSongInSync = () => {
   }, 10 )
 }
 
-const reset_variables = () => {
+const resetVariables = () => {
   Object.assign(track, {
     //Meta data
     id: '',
@@ -105,7 +105,7 @@ const getCurrentlyPlaying = async user => {
   const { id, album, artists, duration_ms } = item
   Object.assign(track, { id })
   if (is_playing && id !== track.last_sync_id && !track_on_track()) {
-    reset_variables()
+    resetVariables()
     clearInterval(_interval)
     Object.assign(track, { id, tick, album, artists, duration_ms, progress_ms, is_playing, last_sync_id: id })
     console.log(track.progress_ms)
@@ -124,12 +124,15 @@ const setTrackId = async () => {
   const tick = Date.now()
   const response = await request({ options, method: 'get' })
   const { item, progress_ms, is_playing } = JSON.parse(response)
-  is_playing && Object.assign(track, { id: get('id', item), progress_ms, tick })
+  const { id } = item
+  if(track.last_sync_id != id) {
+    resetVariables()
+    console.log(' tryna reset!!')
+  }
+
+  is_playing && Object.assign(track, { id, progress_ms, tick, last_sync_id: id })
   console.log(track.progress_ms)
-  setInterval(() => {
-    console.log(track.progress_ms)
-  }, 500); 
-  // getCurrentlyPlaying(dj)
+  console.log(track.id) 
   getSongInSync()
 }
 
@@ -160,16 +163,14 @@ const setCurrentlyPlaying = async (user, log) => {
 }
 
 const broadCastSong = () => {
-  const [_, ...followers] = authorizedUsers
+  const [__, ...followers] = authorizedUsers
   followers.filter(e => e.isActive).forEach(follower => setCurrentlyPlaying(follower))
 }
 
 const syncUsers = async () => {
-  const [dj, ...followers] = authorizedUsers
-  const currentDjSongId = await getCurrentTrackId(dj)
+  const [__, ...followers] = authorizedUsers
+  await setTrackId()
   const songIds = []
-  track.id = currentDjSongId
-  console.log(track.id)
   for (let i = 0; i < followers.length; i++) {
     const { access_token, isActive } = followers[i]
     const id = await getCurrentTrackId({ access_token })
