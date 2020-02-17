@@ -50,16 +50,16 @@ const request = async ({ options, method }) => new Promise((resolve, reject) => 
 
 
 const getSongInSync = () => {
-  const tock = Date.now() - track.tick
-  const initial_track_progress = track.progress_ms + tock
-  const progress_ms = track.progress_ms + tock
-  const initial_progress_ms = Date.now()
+  // const tock = Date.now() - track.tick
+  // const initial_track_progress = track.progress_ms + tock
+  // const progress_ms = track.progress_ms + tock
+  // const initial_progress_ms = Date.now()
 
-  Object.assign(track, { initial_track_progress, progress_ms, initial_progress_ms })
+  // Object.assign(track, { initial_track_progress, progress_ms, initial_progress_ms })
 
-  _interval = setInterval(() => {
-    track.progress_ms = (Date.now() - initial_progress_ms) + initial_track_progress
-  }, 10 )
+  // _interval = setInterval(() => {
+  //   track.progress_ms = (Date.now() - initial_progress_ms) + initial_track_progress
+  // }, 10 )
 }
 
 const resetVariables = () => {
@@ -85,38 +85,6 @@ const track_on_track = (progress_ms) =>
   progress_ms + 200 > track.progress_ms &&
   progress_ms - 200 < track.progress_ms
 
-const getCurrentlyPlaying = async user => {
-  const url = 'https://api.spotify.com/v1/me/player'
-
-  const options = { url, ...authHeaders(user) }
-  const tick = Date.now()
-  const response = await request({ options, method: 'get' })
-  
-  if (response.error) {
-    eventHub.emit('renew_spotify_token')
-    return Promise.resolve() 
-  }
-  
-  const { item, progress_ms, is_playing } = JSON.parse(response)
-  if (!item) {
-    return Promise.resolve() 
-  }
-  
-  const { id, album, artists, duration_ms } = item
-  Object.assign(track, { id })
-  if (is_playing && id !== track.last_sync_id && !track_on_track()) {
-    resetVariables()
-    clearInterval(_interval)
-    Object.assign(track, { id, tick, album, artists, duration_ms, progress_ms, is_playing, last_sync_id: id })
-    console.log(track.progress_ms)
-    getSongInSync()
-    broadCastSong()
-    return Promise.resolve()
-  }
-  return Promise.resolve() 
-}
-
-
 const setTrackId = async () => {
   const [dj] = authorizedUsers
   const url = 'https://api.spotify.com/v1/me/player'
@@ -131,8 +99,6 @@ const setTrackId = async () => {
   }
 
   is_playing && Object.assign(track, { id, progress_ms, tick, last_sync_id: id })
-  console.log(track.progress_ms)
-  console.log(track.id) 
   getSongInSync()
 }
 
@@ -149,7 +115,7 @@ const setCurrentlyPlaying = async (user, log) => {
   const { id, progress_ms } = track
   const body = {
     "uris": ["spotify:track:" + id],
-    "position_ms": progress_ms
+    "position_ms": 0 // progress_ms //TODO FIX THIS SO PROGRESS MS IS ALWAYS RESET ON NEW SONG
   }
   log && console.log(body)
   const options = { url, body, json: true, ...authHeaders(user) }
