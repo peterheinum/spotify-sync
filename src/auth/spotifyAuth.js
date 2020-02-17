@@ -28,9 +28,10 @@ const getUserInfo = async user => {
   }
   const response = await request({ options, method: 'get' })
   const { display_name, images, email } = JSON.parse(response)
-  const [profileImage] = images
-  const { url } = profileImage
-  return Promise.resolve({ url, email, displayName: display_name })
+  // const [profileImage] = images
+  // const { url } = profileImage
+  // return Promise.resolve({ url, email, displayName: display_name })
+  return Promise.resolve({ email, displayName: display_name })
 }
 
 router.get('/callback', async (req, res) => {
